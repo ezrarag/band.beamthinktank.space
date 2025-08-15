@@ -137,7 +137,7 @@ export default function CityGrid() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cities.map((city, index) => {
-            const progress = (city.currentAmount / city.fundingGoal) * 100
+            const progress = (city.currentAmount / city.fundraisingGoal) * 100
             const progressColor = progress >= 80 ? 'bg-green-500' : progress >= 60 ? 'bg-yellow-500' : 'bg-red-500'
             
             return (
@@ -189,7 +189,7 @@ export default function CityGrid() {
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-medium text-gray-700">Fundraising Progress</span>
                         <span className="text-sm text-gray-500">
-                          ${city.currentAmount.toLocaleString()} / ${city.fundingGoal.toLocaleString()}
+                          ${city.currentAmount.toLocaleString()} / ${city.fundraisingGoal.toLocaleString()}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">

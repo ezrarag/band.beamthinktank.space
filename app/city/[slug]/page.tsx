@@ -263,7 +263,7 @@ export default function CityPage() {
     )
   }
 
-  const progress = (city.currentAmount / city.fundingGoal) * 100
+  const progress = (city.currentAmount / city.fundraisingGoal) * 100
 
   const handleBookNow = (eventId: string) => {
     // Handle event booking - would integrate with ticketing system
@@ -406,7 +406,7 @@ export default function CityPage() {
               cityId={slug}
               cityName={city.name}
               currentAmount={city.currentAmount}
-              goal={city.fundingGoal}
+              goal={city.fundraisingGoal}
               onDonationSuccess={handleDonationSuccess}
             />
             
@@ -415,7 +415,7 @@ export default function CityPage() {
               <MilestoneTracker
                 milestones={mockMilestones}
                 currentAmount={city.currentAmount}
-                goal={city.fundingGoal}
+                goal={city.fundraisingGoal}
               />
             </div>
           </motion.div>
@@ -436,7 +436,7 @@ export default function CityPage() {
             <MilestoneTracker
               milestones={mockMilestones}
               currentAmount={city.currentAmount}
-              goal={city.fundingGoal}
+              goal={city.fundraisingGoal}
             />
           </motion.div>
         )}
