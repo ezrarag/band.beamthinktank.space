@@ -54,8 +54,8 @@ export default function DonationForm({ cityId, cityName, currentAmount, goal, on
     setIsLoading(true)
 
     try {
-      // Create payment intent
-      const response = await fetch('/api/create-payment-intent', {
+      // Create checkout session
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,15 +63,18 @@ export default function DonationForm({ cityId, cityName, currentAmount, goal, on
         body: JSON.stringify({
           amount,
           cityId,
+          cityName,
           donorName: donorName.trim(),
+          message,
+          isAnonymous,
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create payment intent')
+        throw new Error('Failed to create checkout session')
       }
 
-      const { clientSecret } = await response.json()
+      const { sessionId } = await response.json()
 
       // Redirect to Stripe Checkout
       const stripe = await stripePromise
@@ -80,27 +83,7 @@ export default function DonationForm({ cityId, cityName, currentAmount, goal, on
       }
 
       const { error } = await stripe.redirectToCheckout({
-        mode: 'payment',
-        lineItems: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Donation to ${cityName}`,
-              description: message || `Supporting ${cityName} community initiatives`,
-            },
-            unit_amount: amount * 100,
-          },
-          quantity: 1,
-        }],
-        success_url: `${window.location.origin}/city/${cityId}?success=true&amount=${amount}`,
-        cancel_url: `${window.location.origin}/city/${cityId}`,
-        client_reference_id: cityId,
-        metadata: {
-          city_id: cityId,
-          donor_name: donorName.trim(),
-          message: message,
-          anonymous: isAnonymous.toString(),
-        },
+        sessionId,
       })
 
       if (error) {
