@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      lineItems: [{
+      line_items: [{
         price_data: {
           currency: 'usd',
           product_data: {
