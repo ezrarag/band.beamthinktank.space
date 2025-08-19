@@ -66,3 +66,84 @@ export interface Milestone {
   achieved_at?: string
   created_at: string
 }
+
+// New types for dashboard
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  city_id: string
+  avatar_url?: string
+  phone?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Governance {
+  id: string
+  user_id: string
+  city_id: string
+  agreement: boolean
+  agreed_at?: string
+  created_at: string
+}
+
+export interface Fundraising {
+  id: string
+  city_id: string
+  user_id: string
+  amount: number
+  goal: number
+  title: string
+  description: string
+  status: 'active' | 'completed' | 'cancelled'
+  end_date: string
+  created_at: string
+}
+
+export interface SlackChannel {
+  id: string
+  city_id: string
+  name: string
+  invite_url: string
+  member_count: number
+  created_at: string
+}
+
+// Dashboard navigation types
+export interface DashboardNavItem {
+  name: string
+  href: string
+  icon: string
+  current: boolean
+}
+
+// Auth helper functions
+export const getCurrentUser = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) throw error
+  return user
+}
+
+export const getUserProfile = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export const checkGovernanceAgreement = async (userId: string, cityId: string) => {
+  const { data, error } = await supabase
+    .from('governance')
+    .select('agreement')
+    .eq('user_id', userId)
+    .eq('city_id', cityId)
+    .single()
+  
+  if (error) return false
+  return data?.agreement || false
+}

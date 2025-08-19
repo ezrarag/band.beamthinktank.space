@@ -1,446 +1,476 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { MapPin, Calendar, Users, DollarSign, Music, Heart } from 'lucide-react'
-import Header from '@/components/Header'
-import EventCard from '@/components/EventCard'
-import DonationForm from '@/components/DonationForm'
-import Leaderboard from '@/components/Leaderboard'
-import MilestoneTracker from '@/components/MilestoneTracker'
+import { Calendar, MapPin, Users, DollarSign, ArrowRight } from 'lucide-react'
 
-// Mock data - in real app, this would come from Supabase
-const cityData = {
+// Define proper types for the city data
+interface Event {
+  id: number
+  title: string
+  date: string
+  time: string
+  location: string
+  attendees: number
+  price: number
+  description: string
+}
+
+interface Milestone {
+  id: number
+  title: string
+  target: number
+  current: number
+  description: string
+}
+
+interface LeaderboardEntry {
+  rank: number
+  name: string
+  contribution: number
+  avatar: string
+}
+
+interface CityData {
+  name: string
+  description: string
+  image: string
+  events: Event[]
+  milestones: Milestone[]
+  leaderboard: LeaderboardEntry[]
+}
+
+// Mock data for cities with proper typing
+const citiesData: Record<string, CityData> = {
   orlando: {
     name: 'Orlando',
-    state: 'FL',
-    description: 'The City Beautiful - Where music meets magic and community comes together to create unforgettable experiences.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 50000,
-    currentAmount: 32000,
-    color: 'city-orlando',
-    coordinator: {
-      name: 'Sarah Johnson',
-      email: 'sarah@beamorlando.com',
-      phone: '(407) 555-0123',
-      bio: 'Local music enthusiast and community organizer with 10+ years of experience bringing people together through the power of music.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The City Beautiful - Home to world-famous theme parks and vibrant entertainment districts.',
+    image: 'https://gfqhzuqckfxtzqawdcso.supabase.co/storage/v1/object/public/hero/pexels-airamdphoto-11668039.jpg',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Orlando Launch',
+        date: '2024-03-15',
+        time: '7:00 PM',
+        location: 'Downtown Orlando',
+        attendees: 150,
+        price: 25,
+        description: 'Join us for the official launch of BEAM Band in Orlando! Live music, networking, and community building.'
+      },
+      {
+        id: 2,
+        title: 'Music Industry Mixer',
+        date: '2024-03-22',
+        time: '6:30 PM',
+        location: 'Winter Park',
+        attendees: 75,
+        price: 15,
+        description: 'Connect with local musicians, producers, and industry professionals in a relaxed setting.'
+      },
+      {
+        id: 3,
+        title: 'Acoustic Night',
+        date: '2024-03-29',
+        time: '8:00 PM',
+        location: 'Mills 50 District',
+        attendees: 100,
+        price: 20,
+        description: 'Intimate acoustic performances from local artists in a cozy venue setting.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Community Launch', target: 1000, current: 750, description: 'Building our Orlando music community' },
+      { id: 2, title: 'Venue Partnerships', target: 20, current: 15, description: 'Establishing local venue relationships' },
+      { id: 3, title: 'Artist Network', target: 500, current: 320, description: 'Connecting local musicians and artists' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Sarah M.', contribution: 500, avatar: 'SM' },
+      { rank: 2, name: 'Mike R.', contribution: 350, avatar: 'MR' },
+      { rank: 3, name: 'Lisa K.', contribution: 250, avatar: 'LK' },
+      { rank: 4, name: 'David P.', contribution: 200, avatar: 'DP' },
+      { rank: 5, name: 'Emma T.', contribution: 150, avatar: 'ET' }
+    ]
   },
   nashville: {
     name: 'Nashville',
-    state: 'TN',
-    description: 'Music City - The heart of country music and southern hospitality, where every note tells a story of community and connection.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 75000,
-    currentAmount: 68000,
-    color: 'city-nashville',
-    coordinator: {
-      name: 'Mike Williams',
-      email: 'mike@beamnashville.com',
-      phone: '(615) 555-0456',
-      bio: 'Nashville native and music industry veteran dedicated to fostering local talent and community engagement.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'Music City - The heart of country music and a thriving creative community.',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Nashville Kickoff',
+        date: '2024-03-20',
+        time: '7:30 PM',
+        location: 'The Gulch',
+        attendees: 200,
+        price: 30,
+        description: 'Experience the magic of Music City with our BEAM Band launch event featuring local talent.'
+      },
+      {
+        id: 2,
+        title: 'Songwriter Circle',
+        date: '2024-03-27',
+        time: '6:00 PM',
+        location: 'East Nashville',
+        attendees: 60,
+        price: 20,
+        description: 'Intimate songwriting workshop and performance circle with established Nashville songwriters.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Music Row Connections', target: 50, current: 35, description: 'Building industry relationships' },
+      { id: 2, title: 'Local Artist Support', target: 300, current: 180, description: 'Supporting emerging Nashville talent' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'John D.', contribution: 600, avatar: 'JD' },
+      { rank: 2, name: 'Maria S.', contribution: 450, avatar: 'MS' },
+      { rank: 3, name: 'Tom W.', contribution: 300, avatar: 'TW' }
+    ]
   },
   atlanta: {
     name: 'Atlanta',
-    state: 'GA',
-    description: 'The Big Peach - Southern hospitality meets urban culture, creating a vibrant community where music bridges all divides.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 60000,
-    currentAmount: 45000,
-    color: 'city-atlanta',
-    coordinator: {
-      name: 'Lisa Chen',
-      email: 'lisa@beamatlanta.com',
-      phone: '(404) 555-0789',
-      bio: 'Community advocate and music lover working to unite Atlanta through the universal language of music.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The A - A diverse cultural hub with a rich musical heritage and innovative spirit.',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Atlanta Launch',
+        date: '2024-03-25',
+        time: '8:00 PM',
+        location: 'Midtown Atlanta',
+        attendees: 180,
+        price: 25,
+        description: 'Launching BEAM Band in Atlanta with a celebration of local hip-hop, R&B, and indie music.'
+      },
+      {
+        id: 2,
+        title: 'Producer Showcase',
+        date: '2024-04-01',
+        time: '7:00 PM',
+        location: 'Buckhead',
+        attendees: 90,
+        price: 35,
+        description: 'Showcasing Atlanta\'s top music producers and their latest work.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Studio Network', target: 30, current: 22, description: 'Connecting with local recording studios' },
+      { id: 2, title: 'Artist Development', target: 200, current: 140, description: 'Supporting emerging Atlanta artists' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Alex K.', contribution: 550, avatar: 'AK' },
+      { rank: 2, name: 'Rachel L.', contribution: 400, avatar: 'RL' },
+      { rank: 3, name: 'Marcus J.', contribution: 280, avatar: 'MJ' }
+    ]
   },
   augusta: {
     name: 'Augusta',
-    state: 'GA',
-    description: 'The Garden City - Rich in history and community spirit, where music grows like the beautiful gardens that give this city its name.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 40000,
-    currentAmount: 28000,
-    color: 'city-augusta',
-    coordinator: {
-      name: 'David Thompson',
-      email: 'david@beamaugusta.com',
-      phone: '(706) 555-0321',
-      bio: 'Local historian and community organizer passionate about preserving Augusta\'s rich cultural heritage through music.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The Garden City - Rich in history and community spirit, where music grows like the beautiful gardens.',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Augusta Launch',
+        date: '2024-04-05',
+        time: '7:00 PM',
+        location: 'Downtown Augusta',
+        attendees: 120,
+        price: 20,
+        description: 'Launching BEAM Band in Augusta with a celebration of local jazz and blues heritage.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Historical Preservation', target: 25, current: 18, description: 'Preserving Augusta\'s musical heritage' },
+      { id: 2, title: 'Community Outreach', target: 150, current: 95, description: 'Building community connections' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Robert W.', contribution: 400, avatar: 'RW' },
+      { rank: 2, name: 'Patricia L.', contribution: 300, avatar: 'PL' },
+      { rank: 3, name: 'James H.', contribution: 200, avatar: 'JH' }
+    ]
   },
   knoxville: {
     name: 'Knoxville',
-    state: 'TN',
-    description: 'The Marble City - Gateway to the Great Smoky Mountains, where natural beauty inspires musical creativity and community harmony.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 35000,
-    currentAmount: 22000,
-    color: 'city-knoxville',
-    coordinator: {
-      name: 'Emily Davis',
-      email: 'emily@beamknoxville.com',
-      phone: '(865) 555-0654',
-      bio: 'Environmental advocate and music educator dedicated to connecting Knoxville\'s natural beauty with its musical soul.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The Marble City - Gateway to the Great Smoky Mountains, where natural beauty inspires musical creativity.',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Knoxville Launch',
+        date: '2024-04-10',
+        time: '7:30 PM',
+        location: 'Market Square',
+        attendees: 140,
+        price: 22,
+        description: 'Launching BEAM Band in Knoxville with mountain music and folk traditions.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Mountain Music Network', target: 30, current: 22, description: 'Connecting mountain music communities' },
+      { id: 2, title: 'Folk Traditions', target: 100, current: 65, description: 'Preserving folk music traditions' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Emily D.', contribution: 350, avatar: 'ED' },
+      { rank: 2, name: 'Thomas K.', contribution: 250, avatar: 'TK' },
+      { rank: 3, name: 'Sarah M.', contribution: 180, avatar: 'SM' }
+    ]
   },
   tampa: {
     name: 'Tampa',
-    state: 'FL',
-    description: 'The Big Guava - Sunshine, beaches, and great vibes come together in this coastal city where music flows like the Gulf waters.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 55000,
-    currentAmount: 38000,
-    color: 'city-tampa',
-    coordinator: {
-      name: 'Carlos Rodriguez',
-      email: 'carlos@beamtampa.com',
-      phone: '(813) 555-0987',
-      bio: 'Tampa Bay native and cultural ambassador working to showcase the city\'s diverse musical heritage and community spirit.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The Big Guava - Sunshine, beaches, and great vibes come together in this coastal city.',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Tampa Launch',
+        date: '2024-04-15',
+        time: '8:00 PM',
+        location: 'Ybor City',
+        attendees: 180,
+        price: 25,
+        description: 'Launching BEAM Band in Tampa with Latin rhythms and coastal vibes.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Coastal Music Scene', target: 40, current: 28, description: 'Building coastal music community' },
+      { id: 2, title: 'Latin Fusion', target: 120, current: 80, description: 'Promoting Latin music fusion' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Carlos R.', contribution: 450, avatar: 'CR' },
+      { rank: 2, name: 'Isabella M.', contribution: 320, avatar: 'IM' },
+      { rank: 3, name: 'Miguel A.', contribution: 280, avatar: 'MA' }
+    ]
   },
   jackson: {
     name: 'Jackson',
-    state: 'MS',
-    description: 'The Crossroads of the South - Where cultures converge and music creates bridges between communities, past and present.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 30000,
-    currentAmount: 18000,
-    color: 'city-jackson',
-    coordinator: {
-      name: 'Maria Johnson',
-      email: 'maria@beamjackson.com',
-      phone: '(601) 555-0543',
-      bio: 'Cultural preservationist and community leader dedicated to celebrating Jackson\'s rich musical and cultural diversity.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The Crossroads of the South - Where cultures converge and music creates bridges between communities.',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Jackson Launch',
+        date: '2024-04-20',
+        time: '7:00 PM',
+        location: 'Fondren District',
+        attendees: 100,
+        price: 18,
+        description: 'Launching BEAM Band in Jackson with blues heritage and southern soul.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Blues Heritage', target: 20, current: 15, description: 'Preserving blues music heritage' },
+      { id: 2, title: 'Southern Soul', target: 80, current: 55, description: 'Promoting southern soul music' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Maria J.', contribution: 300, avatar: 'MJ' },
+      { rank: 2, name: 'William B.', contribution: 220, avatar: 'WB' },
+      { rank: 3, name: 'Dorothy L.', contribution: 180, avatar: 'DL' }
+    ]
   },
   virginia: {
     name: 'Virginia',
-    state: 'VA',
-    description: 'The Old Dominion - Rich in American heritage and community values, where music honors tradition while building the future.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 45000,
-    currentAmount: 32000,
-    color: 'city-virginia',
-    coordinator: {
-      name: 'Robert Wilson',
-      email: 'robert@beamvirginia.com',
-      phone: '(804) 555-0765',
-      bio: 'Historian and community organizer working to preserve Virginia\'s musical heritage while fostering new community connections.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The Old Dominion - Rich in American heritage and community values, where music honors tradition.',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band Virginia Launch',
+        date: '2024-04-25',
+        time: '7:30 PM',
+        location: 'Richmond',
+        attendees: 160,
+        price: 24,
+        description: 'Launching BEAM Band in Virginia with traditional American music and modern innovation.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Traditional Music', target: 35, current: 25, description: 'Preserving traditional American music' },
+      { id: 2, title: 'Modern Innovation', target: 150, current: 95, description: 'Promoting modern musical innovation' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Robert W.', contribution: 400, avatar: 'RW' },
+      { rank: 2, name: 'Elizabeth T.', contribution: 320, avatar: 'ET' },
+      { rank: 3, name: 'George M.', contribution: 250, avatar: 'GM' }
+    ]
   },
   'los-angeles': {
     name: 'Los Angeles',
-    state: 'CA',
-    description: 'The City of Angels - Entertainment capital of the world, where dreams come true and music creates global community connections.',
-    image: '/api/placeholder/800/400',
-    fundraisingGoal: 100000,
-    currentAmount: 85000,
-    color: 'city-losangeles',
-    coordinator: {
-      name: 'Jennifer Martinez',
-      email: 'jennifer@beamla.com',
-      phone: '(213) 555-0890',
-      bio: 'Entertainment industry professional and community advocate working to make LA\'s music scene accessible to all communities.',
-      image: '/api/placeholder/200/200'
-    }
+    description: 'The City of Angels - Entertainment capital of the world, where dreams come true.',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+    events: [
+      {
+        id: 1,
+        title: 'BEAM Band LA Launch',
+        date: '2024-05-01',
+        time: '8:30 PM',
+        location: 'Hollywood',
+        attendees: 300,
+        price: 35,
+        description: 'Launching BEAM Band in LA with star power and entertainment industry connections.'
+      }
+    ],
+    milestones: [
+      { id: 1, title: 'Industry Connections', target: 100, current: 75, description: 'Building entertainment industry network' },
+      { id: 2, title: 'Global Reach', target: 500, current: 320, description: 'Expanding global music community' }
+    ],
+    leaderboard: [
+      { rank: 1, name: 'Jennifer M.', contribution: 800, avatar: 'JM' },
+      { rank: 2, name: 'David L.', contribution: 650, avatar: 'DL' },
+      { rank: 3, name: 'Amanda K.', contribution: 520, avatar: 'AK' }
+    ]
   }
 }
 
-const mockEvents = [
-  {
-    id: '1',
-    title: 'Summer Music Festival',
-    description: 'A day-long celebration of local music featuring multiple bands, food vendors, and community activities.',
-    date: '2024-07-15',
-    time: '2:00 PM',
-    venue: 'Central Park',
-    address: '123 Main St, Downtown',
-    ticket_price: 25,
-    image_url: '/api/placeholder/400/300',
-    status: 'upcoming' as const,
-    city_name: 'Orlando',
-    city_color: 'city-orlando'
-  },
-  {
-    id: '2',
-    title: 'Acoustic Night',
-    description: 'Intimate acoustic performances in a cozy setting with local singer-songwriters.',
-    date: '2024-06-28',
-    time: '7:00 PM',
-    venue: 'The Listening Room',
-    address: '456 Oak Ave, Arts District',
-    ticket_price: 15,
-    image_url: '/api/placeholder/400/300',
-    status: 'upcoming' as const,
-    city_name: 'Orlando',
-    city_color: 'city-orlando'
-  }
-]
-
-const mockMilestones = [
-  {
-    id: '1',
-    amount: 10000,
-    title: 'Community Kickoff',
-    description: 'Initial milestone to establish our presence and begin community outreach programs.',
-    benefits: ['Monthly community meetups', 'Local artist showcases', 'Music education workshops'],
-    achieved: true,
-    achieved_at: '2024-01-15'
-  },
-  {
-    id: '2',
-    amount: 25000,
-    title: 'Music Education Program',
-    description: 'Launch comprehensive music education programs for local schools and community centers.',
-    benefits: ['School music programs', 'Instrument donations', 'Professional musician visits'],
-    achieved: true,
-    achieved_at: '2024-03-20'
-  },
-  {
-    id: '3',
-    amount: 40000,
-    title: 'Community Center',
-    description: 'Establish a dedicated community center for music, arts, and cultural activities.',
-    benefits: ['Performance venue', 'Recording studio', 'Practice rooms', 'Cultural events'],
-    achieved: false
-  }
-]
-
-const mockLeaderboard = [
-  {
-    id: '1',
-    name: 'John Smith',
-    amount: 5000,
-    rank: 1,
-    city: 'Orlando',
-    isAnonymous: false
-  },
-  {
-    id: '2',
-    name: 'Anonymous Supporter',
-    amount: 3500,
-    rank: 2,
-    city: 'Orlando',
-    isAnonymous: true
-  },
-  {
-    id: '3',
-    name: 'Sarah Wilson',
-    amount: 2500,
-    rank: 3,
-    city: 'Orlando',
-    isAnonymous: false
-  }
-]
-
-export default function CityPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const city = cityData[slug as keyof typeof cityData]
-  
-  const [activeTab, setActiveTab] = useState('overview')
+export default function CityPage({ params }: { params: { slug: string } }) {
+  const city = citiesData[params.slug]
 
   if (!city) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">City Not Found</h1>
-          <p className="text-gray-600">The city you're looking for doesn't exist.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const progress = (city.currentAmount / city.fundraisingGoal) * 100
-
-  const handleBookNow = (eventId: string) => {
-    // Handle event booking - would integrate with ticketing system
-    console.log('Booking event:', eventId)
-  }
-
-  const handleDonationSuccess = (amount: number) => {
-    // Handle successful donation - would update UI and database
-    console.log('Donation successful:', amount)
+    notFound()
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      {/* City Hero Section */}
-      <section className={`bg-gradient-to-br from-${city.color} to-${city.color}/80 text-white py-20`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              {city.name}, {city.state}
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              {city.description}
-            </p>
-          </motion.div>
-        </div>
-      </section>
+    <main className="min-h-screen bg-black">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        {/* Left Column - Hero Section */}
+        <div className="relative flex items-center justify-center p-8 lg:p-12">
+          <div className="relative w-full h-full max-w-2xl">
+            {/* Background Image */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center rounded-3xl overflow-hidden"
+              style={{
+                backgroundImage: `url(${city.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              {/* Dark Overlay */}
+              <div className="absolute inset-0 bg-black/40"></div>
+            </div>
 
-      {/* Navigation Tabs */}
-      <section className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
-            {['overview', 'events', 'fundraising', 'community'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
-                  activeTab === tab
-                    ? 'border-beam-500 text-beam-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+            {/* Content Overlay */}
+            <div className="relative z-10 h-full flex flex-col justify-end p-8 text-white">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="space-y-4"
               >
-                {tab}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </section>
-
-      {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {activeTab === 'overview' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-          >
-            {/* City Info */}
-            <div className="lg:col-span-2">
-              <div className="card">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">About {city.name}</h2>
-                <p className="text-gray-600 mb-6">{city.description}</p>
+                <h1 className="text-5xl md:text-6xl font-serif font-bold">
+                  {city.name}
+                </h1>
+                <p className="text-xl text-white/90 max-w-md leading-relaxed">
+                  {city.description}
+                </p>
                 
                 {/* City Stats */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="flex space-x-6 pt-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-beam-600">8</div>
-                    <div className="text-sm text-gray-500">Events</div>
+                    <div className="text-2xl font-bold">{city.events.length}</div>
+                    <div className="text-sm text-white/70">Events</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-beam-600">156</div>
-                    <div className="text-sm text-gray-500">Supporters</div>
+                    <div className="text-2xl font-bold">{city.milestones.length}</div>
+                    <div className="text-sm text-white/70">Milestones</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-beam-600">$32K</div>
-                    <div className="text-sm text-gray-500">Raised</div>
+                    <div className="text-2xl font-bold">{city.leaderboard.length}</div>
+                    <div className="text-sm text-white/70">Supporters</div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
+          </div>
+        </div>
 
-            {/* Coordinator Info */}
-            <div>
-              <div className="card">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">City Coordinator</h3>
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">Photo</span>
-                  </div>
-                  <h4 className="font-semibold text-gray-900">{city.coordinator.name}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{city.coordinator.bio}</p>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div>{city.coordinator.email}</div>
-                    <div>{city.coordinator.phone}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'events' && (
+        {/* Right Column - Menu Style Content */}
+        <div className="p-8 lg:p-12 bg-[rgb(10,11,10)] overflow-y-auto">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="space-y-8"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Upcoming Events</h2>
-              <p className="text-xl text-gray-600">Join us for amazing live music experiences</p>
+            {/* Section Tabs */}
+            <div className="flex space-x-8 border-b border-white/20 pb-4">
+              <button className="text-white/90 hover:text-white transition-colors font-medium text-lg border-b-2 border-white pb-2">
+                EVENTS
+              </button>
+              <button className="text-white/60 hover:text-white/90 transition-colors font-medium text-lg">
+                MILESTONES
+              </button>
+              <button className="text-white/60 hover:text-white/90 transition-colors font-medium text-lg">
+                LEADERBOARD
+              </button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {mockEvents.map((event) => (
-                <EventCard
+
+            {/* Section Title */}
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-3 h-3 bg-white/60 rotate-45"></div>
+                <h2 className="text-4xl md:text-5xl font-serif text-white/90">EVENTS</h2>
+                <div className="w-3 h-3 bg-white/60 rotate-45"></div>
+              </div>
+            </div>
+
+            {/* Events List */}
+            <div className="space-y-6">
+              {city.events.map((event, index) => (
+                <motion.div
                   key={event.id}
-                  event={event}
-                  onBookNow={handleBookNow}
-                />
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 * index }}
+                  className="flex items-start space-x-4 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                >
+                  {/* Event Image Placeholder */}
+                  <div className="w-20 h-20 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-8 h-8 text-white/60" />
+                  </div>
+
+                  {/* Event Details */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-white/90 mb-2">
+                      {event.title}
+                    </h3>
+                    <p className="text-white/70 text-sm mb-3 leading-relaxed">
+                      {event.description}
+                    </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-4 text-white/60">
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="w-4 h-4" />
+                          <span>{event.location}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Users className="w-4 h-4" />
+                          <span>{event.attendees}</span>
+                        </div>
+                      </div>
+                      <div className="text-white/90 font-bold">
+                        ${event.price}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Arrow Icon */}
+                  <div className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
+                    <ArrowRight className="w-4 h-4 text-white/60" />
+                  </div>
+                </motion.div>
               ))}
             </div>
-          </motion.div>
-        )}
 
-        {activeTab === 'fundraising' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-          >
-            <DonationForm
-              cityId={slug}
-              cityName={city.name}
-              currentAmount={city.currentAmount}
-              goal={city.fundraisingGoal}
-              onDonationSuccess={handleDonationSuccess}
-            />
-            
-            <div className="space-y-8">
-              <Leaderboard entries={mockLeaderboard} cityName={city.name} />
-              <MilestoneTracker
-                milestones={mockMilestones}
-                currentAmount={city.currentAmount}
-                goal={city.fundraisingGoal}
-              />
+            {/* Next Section Preview */}
+            <div className="text-center pt-8 border-t border-white/20">
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-3 h-3 bg-white/60 rotate-45"></div>
+                <h3 className="text-3xl font-serif text-white/60">MILESTONES</h3>
+                <div className="w-3 h-3 bg-white/60 rotate-45"></div>
+              </div>
             </div>
           </motion.div>
-        )}
-
-        {activeTab === 'community' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Community Benefits</h2>
-            <p className="text-xl text-gray-600 mb-8">
-              As we reach our fundraising goals, we unlock amazing benefits for the {city.name} community
-            </p>
-            
-            <MilestoneTracker
-              milestones={mockMilestones}
-              currentAmount={city.currentAmount}
-              goal={city.fundraisingGoal}
-            />
-          </motion.div>
-        )}
+        </div>
       </div>
-    </div>
+    </main>
   )
 }

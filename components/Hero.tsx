@@ -1,113 +1,117 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Music, Users, Heart, Star } from 'lucide-react'
-import Link from 'next/link'
+import { Instagram, Facebook, Twitter } from 'lucide-react'
 
 export default function Hero() {
   return (
-    <section className="relative bg-gradient-beam min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-      </div>
+    <div className="relative w-full h-full flex items-center justify-center bg-black rounded-3xl overflow-hidden">
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover object-center"
+        style={{
+          cursor: 'auto',
+          width: '100%',
+          height: '100%',
+          borderRadius: '0px',
+          display: 'block',
+          objectFit: 'cover',
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+          objectPosition: '50% 50%'
+        }}
+      >
+        <source src="https://gfqhzuqckfxtzqawdcso.supabase.co/storage/v1/object/public/hero/3345545-hd_1920_1080_25fps.mp4" type="video/mp4" />
+      </video>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* BEAM BAND Text - Bottom Left */}
+      <div className="absolute bottom-8 left-8 z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="mb-8"
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-7xl font-serif text-white/90 tracking-tight">
             BEAM
-            <span className="block text-2xl md:text-3xl lg:text-4xl font-normal mt-2">
-              Band
+            <span className="block text-2xl md:text-3xl font-light mt-2 text-white/70">
+              BAND
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-            Join the movement across cities. Experience live music, support community causes, 
-            and be part of something bigger than yourself.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-12"
-        >
-          <div className="flex flex-wrap justify-center gap-8 text-white/80">
-            <div className="flex items-center space-x-2">
-              <Music className="w-5 h-5" />
-              <span>Live Concerts</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5" />
-              <span>Community Impact</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Heart className="w-5 h-5" />
-              <span>Fundraising</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Star className="w-5 h-5" />
-              <span>Exclusive Benefits</span>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <Link href="/events" className="btn-primary text-lg px-8 py-4">
-            Find Events
-          </Link>
-          <Link href="/cities" className="btn-secondary text-lg px-8 py-4">
-            Explore Cities
-          </Link>
-        </motion.div>
-
-        {/* City Grid Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-16"
-        >
-          <h3 className="text-white/80 text-lg mb-6">Available in 9 Cities</h3>
-          <div className="grid grid-cols-3 md:grid-cols-9 gap-2 max-w-2xl mx-auto">
-            {['Orlando', 'Nashville', 'Atlanta', 'Augusta', 'Knoxville', 'Tampa', 'Jackson', 'Virginia', 'LA'].map((city, index) => (
-              <div
-                key={city}
-                className="bg-white/20 backdrop-blur-sm rounded-lg p-2 text-xs text-white font-medium hover:bg-white/30 transition-colors cursor-pointer"
-              >
-                {city}
-              </div>
-            ))}
-          </div>
         </motion.div>
       </div>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+      {/* Rounded Corner Overlay - Bottom Right for Social Icons */}
+      <div 
+        className="absolute bottom-0 right-0 bg-[rgb(10,11,10)] rounded-tl-3xl p-6 flex flex-col gap-8"
+        style={{
+          padding: '8px 0px 0px 16px',
+          borderTopLeftRadius: '24px'
+        }}
       >
-        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-          <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-1 h-3 bg-white/60 rounded-full mt-2"
-          ></motion.div>
+        {/* Rounded Edge Top Left - SVG overlay */}
+        <div 
+          className="absolute -top-6 -left-6 w-6 h-6 z-10"
+          style={{
+            bottom: '0px',
+            left: '-23px',
+            top: '-23px',
+            width: '24px',
+            height: '24px'
+          }}
+        >
+          <svg 
+            className="w-6 h-6" 
+            viewBox="0 0 24 24"
+            style={{
+              fill: 'rgb(10, 11, 10)'
+            }}
+          >
+            <path d="M 24 24 L 24 0 C 24 13.255 13.255 24 0 24 Z" />
+          </svg>
         </div>
-      </motion.div>
-    </section>
+
+        {/* Rounded Edge Top Left - Second SVG */}
+        <div 
+          className="absolute -top-6 -right-6 w-6 h-6 z-10"
+          style={{
+            right: '0px',
+            top: '-23px',
+            width: '24px',
+            height: '24px'
+          }}
+        >
+          <svg 
+            className="w-6 h-6" 
+            viewBox="0 0 24 24"
+            style={{
+              fill: 'rgb(10, 11, 10)'
+            }}
+          >
+            <path d="M 24 24 L 24 0 C 24 13.255 13.255 24 0 24 Z" />
+          </svg>
+        </div>
+
+        {/* Social Icons */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="flex space-x-4"
+        >
+          <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors border border-white/20">
+            <Instagram className="w-5 h-5 text-white" />
+          </a>
+          <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors border border-white/20">
+            <Facebook className="w-5 h-5 text-white" />
+          </a>
+          <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors border border-white/20">
+            <Twitter className="w-5 h-5 text-white" />
+          </a>
+        </motion.div>
+      </div>
+    </div>
   )
 }
